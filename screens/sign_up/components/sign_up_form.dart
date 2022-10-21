@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:meggycakes/Widgets/size_config.dart';
 import 'package:meggycakes/components/custom_surfix_icon.dart';
@@ -35,53 +36,54 @@ class _SignUpFormState extends State<SignUpForm> {
   bool remember = false;
   final List<String?> errors = [];
 
-  TextEditingController name = TextEditingController();
-  TextEditingController email = TextEditingController();
-  TextEditingController phone = TextEditingController();
-  TextEditingController address = TextEditingController();
-  TextEditingController city = TextEditingController();
-  TextEditingController state = TextEditingController();
-  TextEditingController zip = TextEditingController();
-  TextEditingController password = TextEditingController();
+  final TextEditingController name = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController phone = TextEditingController();
+  final TextEditingController address = TextEditingController();
+  final TextEditingController city = TextEditingController();
+  final SingleValueDropDownController state = SingleValueDropDownController();
+  final TextEditingController zip = TextEditingController();
+  final TextEditingController password = TextEditingController();
 
-  Future register() async {
-    var url = "http://192.168.31.198/flutter-login-signup/register.php";
-    var response = await http.post(Uri.parse(url), body: {
+  void register() {
+    var url = "http://192.168.43.11/flutter-login-signup/register.php";
+    http.post(Uri.parse(url), body: {
       "cust_name": name.text,
       "cust_email": email.text,
       "cust_phone": phone.text,
       "cust_address": address.text,
       "cust_city": city.text,
-      "cust_state": state.text,
+      "cust_state": state.dropDownValue!.value.toString(),
       "cust_zip": zip.text,
       "cust_password": password.text,
+    }).then((response) {
+      print(response.body);
+      var data = jsonDecode(response.body);
+      if (data == "Error") {
+        Fluttertoast.showToast(
+            msg: "This email/user already exists!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        isLogin = false;
+        return isLogin;
+      } else {
+        Fluttertoast.showToast(
+            msg: "Registration Successful",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Color.fromARGB(255, 53, 235, 62),
+            textColor: Colors.white,
+            fontSize: 16.0);
+        isLogin = true;
+        return isLogin;
+        Navigator.pushNamed(context, LoginSuccessScreen.routeName);
+      }
     });
-    var encodeFirst = json.encode(response.body);
-    var data = json.decode(encodeFirst);
-
-    if (data == "Error") {
-      Fluttertoast.showToast(
-          msg: "This email/user already exists!",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
-      isLogin = false;
-      return isLogin;
-    } else {
-      Fluttertoast.showToast(
-          msg: "Registration Successful",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color.fromARGB(255, 53, 235, 62),
-          textColor: Colors.white,
-          fontSize: 16.0);
-      isLogin = true;
-      return isLogin;
-    }
   }
 
   void addError({String? error}) {
@@ -324,17 +326,14 @@ class _SignUpFormState extends State<SignUpForm> {
     );
   }
 
-  TextFormField buildStateFormField() {
-    return TextFormField(
+  DropDownTextField buildStateFormField() {
+    return DropDownTextField(
       controller: state,
-      keyboardType: TextInputType.streetAddress,
-      onSaved: (newValue) => v_state = newValue,
-      onChanged: (value) {
-        if (value.isNotEmpty) {
-          removeError(error: kAddressNullError);
-        }
-        v_state == value;
-      },
+      clearOption: true,
+      enableSearch: true,
+      clearIconProperty: IconProperty(color: Colors.green),
+      searchDecoration:
+          const InputDecoration(hintText: "Search for your state here"),
       validator: (value) {
         if (value!.isEmpty) {
           addError(error: kAddressNullError);
@@ -344,12 +343,34 @@ class _SignUpFormState extends State<SignUpForm> {
         v_state == value;
       },
       // ignore: prefer_const_constructors
-      decoration: InputDecoration(
-        labelText: "State/Provice",
-        hintText: "Enter your state or province",
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon:
-            CustomSurffixIcon(svgIcon: "assets/icons/Location point.svg"),
+      dropDownList: const [
+        DropDownValueModel(name: 'Arusha', value: "Arusha"),
+        DropDownValueModel(name: 'Bagamoyo', value: "Bagamoyo"),
+        DropDownValueModel(name: 'Bukoba', value: "Bukoba"),
+        DropDownValueModel(name: 'Dar es Salaam', value: "Dar es Salaam"),
+        DropDownValueModel(name: 'Dodoma', value: "Dodoma"),
+        DropDownValueModel(name: 'Iringa', value: "Iringa"),
+        DropDownValueModel(name: 'Kilwa', value: "Kilwa"),
+        DropDownValueModel(name: 'Kondoa-Irangi', value: "Kondoa-Irangi"),
+        DropDownValueModel(name: 'Lindi', value: "Lindi"),
+        DropDownValueModel(name: 'Mahenge', value: "Mahenge"),
+        DropDownValueModel(name: 'Morogoro', value: "Morogoro"),
+        DropDownValueModel(name: 'Moshi', value: "Moshi"),
+        DropDownValueModel(name: 'Mwanza', value: "Mwanza"),
+        DropDownValueModel(name: 'Pangani', value: "Pangani"),
+        DropDownValueModel(name: 'Rufiji', value: "Rufiji"),
+        DropDownValueModel(name: 'Rungwe', value: "Rungwe"),
+        DropDownValueModel(name: 'Songea', value: "Songea"),
+        DropDownValueModel(name: 'Tabora', value: "Tabora"),
+        DropDownValueModel(name: 'Tanga', value: "Tanga"),
+        DropDownValueModel(name: 'Ufipa', value: "Ufipa"),
+        DropDownValueModel(name: 'Ujiji', value: "Ujiji"),
+        DropDownValueModel(name: 'Usambara', value: "Usambara"),
+        DropDownValueModel(name: 'Other', value: "Other"),
+      ],
+      textFieldDecoration: InputDecoration(
+        labelText: "State",
+        hintText: "Enter your state",
       ),
     );
   }
